@@ -15,12 +15,17 @@ def parse_arguments():
                         help='Specify a graph file to read')
 
     args = parser.parse_args()
-    return args
+    return dict(args._get_kwargs())
 
-
+def read_input(filename):
+    with open(filename, "r", encoding='utf-8') as f:
+        content = f.read()
+    return content
 
 def main():
     args = parse_arguments()
-    print(args)
+    content = read_input(args['graph-file'][0])
+    print(content)
+
 if __name__ != "main":
     main()
