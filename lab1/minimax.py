@@ -52,7 +52,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
         for c in graph[s]:
             [_choice, _v] = minimax_helper(c, not maxTurn, graph, alpha, beta, verbose)
             if verbose and _choice:
-                print(f"max({c}) chooses {_choice} for {_v}")
+                print(f"min({c}) chooses {_choice} for {_v}")
             if _v > v:
                 v = _v
                 choice = c
@@ -66,7 +66,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
         for c in graph[s]:
             [_choice, _v] = minimax_helper(c, not maxTurn, graph, alpha, beta, verbose)
             if verbose and _choice:
-                print(f"min({c}) chooses {_choice} for {_v}")
+                print(f"max({c}) chooses {_choice} for {_v}")
             if _v < v:
                 v = _v
                 choice = c
