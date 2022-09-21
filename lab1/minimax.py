@@ -27,13 +27,26 @@ def read_input(filename):
                 graph[parent] = eval(children.replace('[', '["').replace(',', '","').replace(']', '"]'))
             elif '=' in line:
                 terminal, value = line.split("=")
-                graph[terminal] = value
+                graph[terminal] = eval(value)
     return graph
+
+def find_root(graph):
+    parents = set()
+    children = set()
+    for k, v in graph.items():
+        if isinstance(v, list):
+            for node in v:
+                children.add(node)
+            parents.add(k)
+        elif isinstance(v, int):
+            parents.add(k)
+    return  parents - children
 
 def main():
     args = parse_arguments()
     graph = read_input(args['graph-file'][0])
-    print(graph)
+    root = find_root(graph)
+    print(root)
 
 if __name__ != "main":
     main()
