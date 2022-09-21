@@ -18,14 +18,22 @@ def parse_arguments():
     return dict(args._get_kwargs())
 
 def read_input(filename):
+    graph = dict()
     with open(filename, "r", encoding='utf-8') as f:
-        content = f.read()
-    return content
+        for line in f.readlines():
+            line = line.strip().replace(' ', '')
+            if ':' in line:
+                parent, children = line.split(':')
+                graph[parent] = eval(children.replace('[', '["').replace(',', '","').replace(']', '"]'))
+            elif '=' in line:
+                terminal, value = line.split("=")
+                graph[terminal] = value
+    return graph
 
 def main():
     args = parse_arguments()
-    content = read_input(args['graph-file'][0])
-    print(content)
+    graph = read_input(args['graph-file'][0])
+    print(graph)
 
 if __name__ != "main":
     main()
