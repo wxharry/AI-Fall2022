@@ -90,5 +90,5 @@ def main():
     root = find_root(graph)
     minimax(list(root)[0], args['min/max'][0] == 'max', graph, args['ab'], verbose=args['v'])
 
-if __name__ != "main":
+if __name__ == "__main__":
     main()
