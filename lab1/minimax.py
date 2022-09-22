@@ -68,6 +68,8 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
                 v = _v
                 choice = c
             if beta != None and _v >= beta:
+                if _v == alpha:
+                    break
                 return None, v
             if alpha != None and _v > alpha:
                 alpha = _v
@@ -82,6 +84,8 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
                 v = _v
                 choice = c
             if alpha != None and _v <= alpha:
+                if _v == alpha:
+                    break
                 return None, v
             if beta != None and _v < beta:
                 beta = _v
