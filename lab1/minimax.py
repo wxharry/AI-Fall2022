@@ -41,7 +41,18 @@ def find_root(graph):
             parents.add(k)
         elif isinstance(v, int):
             parents.add(k)
-    return  parents - children
+    for child in children - parents:
+        for parent in parents:
+            if isinstance(graph[parent], list) and child in graph[parent]:
+                print(f'child "{child}" of "{parent}" not found')
+                break
+        return None
+    root = parents - children
+    if len(root) > 1:
+        root = list(root)
+        print(f'multiple roots: "{root[0]}" and "{root[1]}"')
+        return None
+    return root
 
 def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
     choice = None
@@ -56,7 +67,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
             if _v >= v:
                 v = _v
                 choice = c
-            if beta != None and _v > beta:
+            if beta != None and _v >= beta:
                 return None, v
             if alpha != None and _v > alpha:
                 alpha = _v
@@ -70,7 +81,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
             if _v <= v:
                 v = _v
                 choice = c
-            if alpha != None and _v < alpha:
+            if alpha != None and _v <= alpha:
                 return None, v
             if beta != None and _v < beta:
                 beta = _v
@@ -88,6 +99,8 @@ def main():
     args = parse_arguments()
     graph = read_input(args['graph-file'][0])
     root = find_root(graph)
+    if root == None:
+        return 1
     minimax(list(root)[0], args['min/max'][0] == 'max', graph, args['ab'], verbose=args['v'])
 
 if __name__ == "__main__":
