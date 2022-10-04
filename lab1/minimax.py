@@ -98,6 +98,19 @@ def minimax(s, maxTurn, graph, ab, verbose=False):
         [choice, v] = minimax_helper(s, maxTurn, graph, verbose=verbose)
     print(f"{'max' if maxTurn else 'min'}({s}) chooses {choice} for {v}")
     
+def detectCycle(root, g):
+    nodes = root
+    visited = set()
+    while len(nodes):
+        for node in list(nodes):
+            visited.add(node)
+            nodes.pop(0)
+            if isinstance(g[node], list):
+                for child in g[node]:
+                    if isinstance(g[child], list) and child in visited:
+                        return True
+                    nodes.append(child)
+    return False
 
 def main():
     args = parse_arguments()
@@ -105,7 +118,11 @@ def main():
     root = find_root(graph)
     if root == None:
         return 1
+    if detectCycle(list(root), graph):
+        print("Detect loop in graph")
+        return 1
     minimax(list(root)[0], args['min/max'][0] == 'max', graph, args['ab'], verbose=args['v'])
+    return 0
 
 if __name__ == "__main__":
     main()
