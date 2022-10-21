@@ -47,11 +47,11 @@ class Atom:
         self.vertex = vertex
         self.color = color
     def __str__(self) -> str:
-        return f'COLOR({self.vertex}, {self.color})'
+        return f"{self.vertex}_{self.color}"
     def __repr__(self) -> str:
         return f'Atom({self.vertex}, {self.color})'
     def __hash__(self):
-        return hash(f"{self.vertex}_{self.color}")
+        return hash(str(self))
     def __eq__(self, __o: object) -> bool:
         return self.vertex == __o.vertex and self.color == __o.color
 
@@ -115,7 +115,7 @@ def DPLL(atoms, clauses, assignments={}):
             pure_literal = pure_literals.pop()
             assignments = obviousAssign(pure_literal, assignments)
             if VERBOSE:
-                print(f"found pure literal {pure_literal}, set to {assignments[str(pure_literal.atom)]}")
+                print(f"found pure literal {pure_literal}, set to {assignments[pure_literal.atom]}")
                 print(f"assignments = {assignments}")
             for clause in list(clauses):
                 if pure_literal in clause:
@@ -126,7 +126,7 @@ def DPLL(atoms, clauses, assignments={}):
             singleton = singletons.pop()
             assignments = obviousAssign(singleton, assignments)
             if VERBOSE:
-                print(f"found singleton {singleton}, set {singleton} to {assignments[str(singleton.atom)]}")
+                print(f"found singleton {singleton}, set {singleton} to {assignments[singleton.atom]}")
                 print(f"assignments = {assignments}")
             clauses = propagate(singleton.atom, clauses, assignments)
         else:
