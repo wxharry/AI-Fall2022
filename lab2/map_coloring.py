@@ -87,6 +87,11 @@ def graph_constraints(graph, n):
     return atoms, clauses
 
 def DPLL(atoms, clauses, assignments={}):
+    """ DPLL
+    is implemented based on Davis-Putnam (DPLL) procedure with a few modifications:
+    1. use a dict in Python rather than a list to record assignments
+    2. because of 1, no need to have a helper function
+    """
     while True:
         if VERBOSE:
             for clause in clauses:

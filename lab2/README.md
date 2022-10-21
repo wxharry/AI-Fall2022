@@ -11,22 +11,22 @@ positional arguments:
 
 options:
   -h, --help  show this help message and exit
-  -v          Indicates verbose mode
+  -v          Indicates verbose mode (go through DPLL assignment process)
 ```
 
 ## Example
 ``` bash
 > python3 map_coloring.py 3 triangle.txt
-COLOR(9, G)
-COLOR(4, G)
-COLOR(2, B)
-COLOR(5, R)
-COLOR(6, B)
-COLOR(3, G)
-COLOR(8, B)
-COLOR(1, R)
-COLOR(7, R)
-COLOR(10, G)
+4 = Red
+1 = Blue
+2 = Green
+3 = Red
+5 = Blue
+6 = Green
+9 = Red
+8 = Green
+7 = Blue
+10 = Blue
 ```
 
 ## Reference
