@@ -5,7 +5,7 @@ email: xiaohanwu12@gmail.com
 """
 import argparse
 
-COLORS = ["R", "G", "B", "Y"]
+COLORS = ["Red", "Green", "Blue", "Yellow"]
 VERBOSE = False
 
 def parse_arguments():
@@ -97,8 +97,8 @@ def DPLL(atoms, clauses, assignments={}):
                 print("Clause is empty")
                 print("Set unbounded atom to defalut(False)")
             for atom in atoms:
-                if not assignments.get(str(atom)):
-                    assignments[str(atom)] = False
+                if not assignments.get(atom):
+                    assignments[atom] = False
             if VERBOSE:
                 print(f"assignments = {assignments}")
                 print("SUCCESS!")
@@ -133,8 +133,8 @@ def DPLL(atoms, clauses, assignments={}):
             break
     # Hard case:
     # pick an unbounded atom
-    guess = [atom for atom in atoms if assignments.get(str(atom)) == None][0]
-    assignments[str(guess)] = True
+    guess = [atom for atom in atoms if assignments.get(atom) == None][0]
+    assignments[guess] = True
     if VERBOSE:
         print(f"guess {guess} True")
         print(f"assignments = {assignments}")
@@ -143,7 +143,7 @@ def DPLL(atoms, clauses, assignments={}):
     assignments_new = DPLL(atoms, clauses_copy, assignments)
     if assignments_new != None :
         return assignments_new
-    assignments[str(guess)] = False
+    assignments[guess] = False
     if VERBOSE:
         print(f"backtracking to {guess}")
         print(f"guess {guess} False")
@@ -176,11 +176,11 @@ def propagate(atom, clauses, assignments):
         new_clause = []
         for literal in clause:
             # if literal = True, then delete clause
-            if str(literal.atom) == str(atom) and literal.sign == assignments[str(atom)]:
+            if literal.atom == atom and literal.sign == assignments[atom]:
                 new_clause = []
                 break
             # if literal = False, then delete literal
-            elif str(literal.atom) == str(atom) and assignments[str(atom)] != None and literal.sign != assignments[str(atom)]:
+            elif literal.atom == atom and assignments[atom] != None and literal.sign != assignments[atom]:
                 continue
             new_clause.append(literal)
         if new_clause == []:
@@ -190,15 +190,15 @@ def propagate(atom, clauses, assignments):
 
 def obviousAssign(literal, assignments):
     if literal.sign:
-        assignments[str(literal.atom)] = True
+        assignments[literal.atom] = True
     elif not literal.sign:
-        assignments[str(literal.atom)] = False
+        assignments[literal.atom] = False
     return assignments
 
 def convertBack(assignments):
     for k, v in assignments.items():
         if v:
-            print(k)
+            print(f"{k.vertex} = {k.color}")
 
 
 def main():
