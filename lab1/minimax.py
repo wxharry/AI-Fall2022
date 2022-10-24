@@ -3,7 +3,7 @@ from math import inf
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-v', default=False, action='store_true',
+    parser.add_argument('-v', '-verbose', default=False, action='store_true',
                         help='Indicates verbose mode')
 
     parser.add_argument('-ab', default=False, action='store_true',
@@ -68,6 +68,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
                 v = _v
                 choice = c
             if beta != None and _v >= beta:
+                print(f"{s} is pruned by beta")
                 if _v == beta:
                     break
                 return None, v
@@ -84,6 +85,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
                 v = _v
                 choice = c
             if alpha != None and _v <= alpha:
+                print(f"{s} is pruned by alpha")
                 if _v == alpha:
                     break
                 return None, v
