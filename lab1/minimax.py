@@ -68,7 +68,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
                 v = _v
                 choice = c
             if beta != None and _v >= beta:
-                print(f"{s} is pruned by beta")
+                print(f"{s} is pruned by beta of {beta} when {choice} returns {_v}")
                 if _v == beta:
                     break
                 return None, v
@@ -85,7 +85,7 @@ def minimax_helper(s, maxTurn, graph, alpha=None, beta=None, verbose=False):
                 v = _v
                 choice = c
             if alpha != None and _v <= alpha:
-                print(f"{s} is pruned by alpha")
+                print(f"{s} is pruned by alpha of {alpha} when {choice} returns {_v}")
                 if _v == alpha:
                     break
                 return None, v
