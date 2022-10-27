@@ -120,7 +120,7 @@ def DPLL(atoms, clauses, assignments={}):
             pure_literal = pure_literals.pop()
             assignments = obviousAssign(pure_literal, assignments)
             if VERBOSE:
-                print(f"found pure literal {pure_literal}, set to {assignments[pure_literal.atom]}")
+                print(f"found pure literal {pure_literal}, set {pure_literal.atom} to {assignments[pure_literal.atom]}")
                 print(f"assignments = {assignments}")
             for clause in list(clauses):
                 if pure_literal in clause:
@@ -131,7 +131,7 @@ def DPLL(atoms, clauses, assignments={}):
             singleton = singletons.pop()
             assignments = obviousAssign(singleton, assignments)
             if VERBOSE:
-                print(f"found singleton {singleton}, set {singleton} to {assignments[singleton.atom]}")
+                print(f"found singleton {singleton}, set {singleton.atom} to {assignments[singleton.atom]}")
                 print(f"assignments = {assignments}")
             clauses = propagate(singleton.atom, clauses, assignments)
         else:
@@ -182,13 +182,14 @@ def propagate(atom, clauses, assignments):
         for literal in clause:
             # if literal = True, then delete clause
             if literal.atom == atom and literal.sign == assignments[atom]:
-                new_clause = []
+                new_clause = None
                 break
             # if literal = False, then delete literal
             elif literal.atom == atom and assignments[atom] != None and literal.sign != assignments[atom]:
                 continue
             new_clause.append(literal)
-        if new_clause == []:
+        # remove the clause with a True literal
+        if new_clause == None:
             continue
         new_clauses.append(new_clause)
     return new_clauses
@@ -213,6 +214,9 @@ def main():
     graph = read_input(args['input-file'])
     atoms, clauses = graph_constraints(graph, eval(args['ncolor']))
     assignments = DPLL(atoms, clauses)
+    if assignments == None:
+        print(f"error: cannot fill in the map with {args['ncolor']} colors")
+        return
     convertBack(assignments)
 
 if __name__ == "__main__":
