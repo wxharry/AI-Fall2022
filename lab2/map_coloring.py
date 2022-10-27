@@ -63,6 +63,10 @@ class Literal:
         return f'{"" if self.sign else "!"}{str(self.atom)}'
     def __repr__(self) -> str:
         return f'Literal({self.sign}, {repr(self.atom)})'
+    def __hash__(self):
+        return hash(str(self))
+    def __eq__(self, __o: object) -> bool:
+        return self.sign == __o.sign and self.atom == __o.atom
 
 def graph_constraints(graph, n):
     """
@@ -80,6 +84,7 @@ def graph_constraints(graph, n):
             for neighbor in neighbors:
                 # for each vertex, either it is color, or its neighbor is color. (in CNF way)
                 clauses.append([Literal(False, Atom(vertex, color)), Literal(False, Atom(neighbor, color))])
+            # optional: if vertex is one color, then it cannot be any other colors
             for _color in COLORS[:n]:
                 if color == _color:
                     continue
@@ -94,8 +99,12 @@ def DPLL(atoms, clauses, assignments={}):
     """
     while True:
         if VERBOSE:
+            output_clauses = []
             for clause in clauses:
-                print(' | '.join([str(literal) for literal in clause]))
+                print_clause = ' | '.join([str(literal) for literal in clause])
+                if print_clause not in output_clauses:
+                    print(print_clause)
+                    output_clauses.append(print_clause)
         # base of the recursion: success or failure
         if len(clauses) == 0:
             if VERBOSE:
@@ -110,7 +119,7 @@ def DPLL(atoms, clauses, assignments={}):
             return assignments
         elif [] in clauses:
             if VERBOSE:
-                print("FAILED!")
+                print("found empty clause!")
             return None
         # easy cases
         # pure literal
@@ -145,7 +154,8 @@ def DPLL(atoms, clauses, assignments={}):
         print(f"assignments = {assignments}")
     clauses_copy = clauses.copy()
     clauses_copy = propagate(guess, clauses_copy, assignments)
-    assignments_new = DPLL(atoms, clauses_copy, assignments)
+    assignments_copy = assignments.copy()
+    assignments_new = DPLL(atoms, clauses_copy, assignments_copy)
     if assignments_new != None :
         return assignments_new
     assignments[guess] = False
@@ -185,7 +195,7 @@ def propagate(atom, clauses, assignments):
                 new_clause = None
                 break
             # if literal = False, then delete literal
-            elif literal.atom == atom and assignments[atom] != None and literal.sign != assignments[atom]:
+            elif literal.atom == atom and assignments.get(atom) != None and literal.sign != assignments[atom]:
                 continue
             new_clause.append(literal)
         # remove the clause with a True literal
