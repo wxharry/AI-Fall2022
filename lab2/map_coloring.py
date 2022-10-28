@@ -54,6 +54,8 @@ class Atom:
         return hash(str(self))
     def __eq__(self, __o: object) -> bool:
         return self.vertex == __o.vertex and self.color == __o.color
+    def __lt__(self, __o: object) -> bool:
+        return str(self) < str(__o)
 
 class Literal:
     def __init__(self, sign, atom) -> None:
@@ -89,7 +91,7 @@ def graph_constraints(graph, n):
                 if color == _color:
                     continue
                 clauses.append([Literal(False, Atom(vertex, color)), Literal(False, Atom(vertex, _color))])
-    return atoms, clauses
+    return sorted(list(atoms)), clauses
 
 def DPLL(atoms, clauses, assignments={}):
     """ DPLL
@@ -147,7 +149,7 @@ def DPLL(atoms, clauses, assignments={}):
             break
     # Hard case:
     # pick an unbounded atom
-    guess = [atom for atom in atoms if assignments.get(atom) == None][0]
+    guess = sorted([atom for atom in atoms if assignments.get(atom) == None])[0]
     assignments[guess] = True
     if VERBOSE:
         print(f"guess {guess} True")
@@ -212,8 +214,8 @@ def obviousAssign(literal, assignments):
     return assignments
 
 def convertBack(assignments):
-    for k, v in assignments.items():
-        if v:
+    for k in sorted(assignments.keys()):
+        if assignments[k]:
             print(f"{k.vertex} = {k.color}")
 
 
