@@ -7,6 +7,7 @@ from math import inf
 import argparse
 
 VERBOSE = False
+MIN_VALUE = False
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='')
@@ -77,7 +78,7 @@ def is_cyclic(graph):
     visited = {v: False for v in V}
     recStack = {v: False for v in V}
     for node in V:
-        if visited[node] == False:
+        if not visited[node]:
             if is_cyclic_util(graph, node, visited, recStack):
                 return set()
     return entries
@@ -96,9 +97,9 @@ def is_cyclic_util(graph, v, visited, recStack):
     # recStack then graph is cyclic
     for neighbor in graph.get(v, []):
         if visited[neighbor] == False:
-            if is_cyclic_util(graph, neighbor, visited, recStack) == True:
+            if is_cyclic_util(graph, neighbor, visited, recStack):
                 return True
-        elif recStack[neighbor] == True:
+        elif recStack[neighbor]:
             return True
 
     # The node needs to be popped from
@@ -128,16 +129,19 @@ def backwards_induction_helper(graph, probabilities, rewards, node):
     else:
         # if a decision node
         if probabilities.get(node) == None or len(probabilities[node]) == 1:
-            max_v = -inf
+            choice_v = -inf if not MIN_VALUE else inf
             choice = None
             for child in graph[node]:
                 _v = backwards_induction_helper(graph, probabilities, rewards, child)
-                if _v > max_v:
-                    max_v = _v
+                if not MIN_VALUE and _v > choice_v:
+                    choice_v = _v
+                    choice = child
+                if MIN_VALUE and _v < choice_v:
+                    choice_v = _v
                     choice = child
             print(f"{node}->{choice}")
-            rewards[node] = max_v
-            return max_v
+            rewards[node] = choice_v
+            return choice_v
         # if a chance node
         else:
             expectation = rewards.get(node, 0)
@@ -182,20 +186,23 @@ def greedy_policy_computation(v):
 
 def main():
     args = parse_arguments()
-    global VERBOSE
+    global VERBOSE, MIN_VALUE
     VERBOSE = args['v']
+    MIN_VALUE = args['min']
     # get input
     graph, probabilities, rewards = read_input(args['input-file'])
-    print(graph)
-    print(probabilities)
-    print(rewards)
+    # print(graph)
+    # print(probabilities)
+    # print(rewards)
     # if acyclic
     entries = is_cyclic(graph)
+    print(entries)
     # run Backwards induction if no
     if len(entries):
         # backwards induction
         backwards_induction(graph, probabilities, rewards, entries)
-        print(sorted(rewards.items(), key=lambda x: x[0]))
+        if VERBOSE:
+            print(sorted(rewards.items(), key=lambda x: x[0]))
     # run MDP solver
     else:
         markov_process_solver()
