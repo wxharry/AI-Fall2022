@@ -6,21 +6,25 @@ email: xiaohanwu12@gmail.com
 from math import inf
 import argparse
 
+DISCOUNT_FACTOR = 1.0
 VERBOSE = False
 MIN_VALUE = False
+TOLERANCE = 0.01
+MAX_ITERATION = 100
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-df', default=1.0,
-                        help='a float discount factor [0, 1] to use on future rewards, defaults to 1.0 if not set')
-    parser.add_argument('-min', default=False, action='store_true',
-                        help='minimize values as costs, defaults to false which maximizes values as rewards')
-    parser.add_argument('-tol', default=0.01, 
-                        help='a float tolerance for exiting value iteration, defaults to 0.01')
-    parser.add_argument('-iter', default=100, 
-                        help='an integer that indicates a cutoff for value iteration, defaults to 100')
-    parser.add_argument('-v', default=False, action='store_true',
-                        help='Indicates verbose mode')
+    parser.add_argument('-df', default=DISCOUNT_FACTOR,
+                        help=f'a float discount factor [0, 1] to use on future rewards, defaults to {DISCOUNT_FACTOR} if not set')
+    parser.add_argument('-min', default=MIN_VALUE, action='store_true',
+                        help=f'minimize values as costs, defaults to {MIN_VALUE} which {"minimizes" if MIN_VALUE else "maximizes"} values as rewards')
+    parser.add_argument('-tol', default=TOLERANCE, 
+                        help=f'a float tolerance for exiting value iteration, defaults to {TOLERANCE}')
+    parser.add_argument('-iter', default=MAX_ITERATION, 
+                        help=f'an integer that indicates a cutoff for value iteration, defaults to {MAX_ITERATION}')
+    parser.add_argument('-v', default=VERBOSE, action='store_true',
+                        help=f'Indicates verbose mode, default to {VERBOSE}')
     parser.add_argument('input-file', 
                         help='Specify a input file to read')
 
@@ -150,43 +154,113 @@ def backwards_induction_helper(graph, probabilities, rewards, node):
             rewards[node] = expectation
             return expectation
 
-def markov_process_solver():
+def markov_process_solver(graph, probabilities, rewards):
     """
     used for graphs with cycles
     """
-    pi = initial_policy()
-    v = initial_values()
+    pi = initial_policy(graph, probabilities)
+    values = initial_values(graph, rewards)
+    # print(values)
+    # print(pi)
+    # print()
     while True:
-        v = value_iteration(pi)
-        _pi = greedy_policy_computation(v)
+        values = value_iteration(graph, probabilities, values, pi, rewards)
+        print(values)
+        _pi = greedy_policy_computation(graph, values, pi)
+        print(_pi)
+        # print(_pi)
         if pi == _pi:
-            return pi, v
+            return pi, values
         pi = _pi
 
-def initial_policy():
-    pass
+def initial_policy(graph, probabilities):
+    """
+    initializes an arbitrary policy for each decision node in the graph
+    arbitrarily pick the first one in its neighbor as the next state
+    """
+    policy = {}
+    for current, neighbor in graph.items():
+        # if current state is a decision node
+        # a decision node should have only one probability
+        # if a node only has one neighbor it always transits to, it is not considered as a decision node
+        if len(probabilities.get(current, [1.0])) == 1 and len(neighbor) > 1:
+            policy[current] = neighbor[0]
+    return policy
 
-def initial_values():
-    pass
+def initial_values(graph, rewards):
+    values = {}
+    parents = {k for k in graph.keys()}
+    children = {v for lst in graph.values() for v in lst}
+    V = parents | children
+    for s in V:
+        values[s] = rewards.get(s, 0)
+    return dict(sorted(values.items(), key= lambda x: x[0]))
 
-def value_iteration(pi):
+def value_iteration(graph, probabilities, values, pi, rewards):
     """
     computes a transition matrix using a fixed policy
     then iterates by recomputing values for each node using the previous values until either:
     * no value changes by more than the 'tol' flag,  
     * or -iter iterations have taken place.  
     """
-    pass
+    iter = 0
+    new_values = {}
+    while True:
+        new_values = {}
+        for node in values:
+            lst = []
+            # if a decision node
+            if pi.get(node):
+                for neighbor in graph[node]:
+                    # if neighbor is identical to the policy
+                    if neighbor == pi[node]:
+                        lst.append(probabilities.get(node, [1.0])[0] * values[neighbor])
+                    else:
+                        lst.append((1 - probabilities.get(node, [1.0])[0])/(len(graph[node])-1) * values[neighbor])
+            # else if a terminal
+            elif not graph.get(node):
+                new_values[node] = rewards.get(node, 0)
+                continue
+            # else if a transition node, which has one child and has one or no probability
+            else:
+                lst = []
+                exp = 0
+                print(node)
+                for p, v in zip(probabilities.get(node, [1]), graph[node]):
+                    print(p, v)
+                    exp += p * values[v]
+                lst.append(exp)
+            new_values[node] = rewards.get(node, 0) + DISCOUNT_FACTOR * sum(lst)
+        # break out condition
+        print(new_values)
+        tolerance = max([abs(new_values[node] - values[node]) for node in values])
+        if tolerance < TOLERANCE or iter >= MAX_ITERATION:
+            return new_values
+        values = new_values
+        iter += 1
+    return new_values
 
-def greedy_policy_computation(v):
+def greedy_policy_computation(graph, values, pi):
     """
     uses the current set of values to compute a new policy. If -min is not set, the policy is chosen to maximize rewards; if -min is set, the policy is chosen to minimize costs.
     """
-    pass
+    new_pi = {}
+    for current, next in pi.items():
+        choice_v = values[current]
+        choice = next
+        for option in graph[current]:
+            if not MIN_VALUE and values[option] > choice_v:
+                choice = option
+                choice_v = values[option]
+            if MIN_VALUE and values[option] < choice_v:
+                choice = option
+                choice_v = values[option]
+        new_pi[current] = choice
+    return new_pi
 
 def main():
     args = parse_arguments()
-    global VERBOSE, MIN_VALUE
+    global VERBOSE, MIN_VALUE, TOLERANCE, MAX_ITERATION
     VERBOSE = args['v']
     MIN_VALUE = args['min']
     # get input
@@ -196,16 +270,18 @@ def main():
     # print(rewards)
     # if acyclic
     entries = is_cyclic(graph)
-    print(entries)
+    # print(entries)
     # run Backwards induction if no
     if len(entries):
         # backwards induction
         backwards_induction(graph, probabilities, rewards, entries)
         if VERBOSE:
-            print(sorted(rewards.items(), key=lambda x: x[0]))
+            print(' '.join([f"{k}={v}" for k, v in sorted(rewards.items(), key=lambda x: x[0])]))
     # run MDP solver
     else:
-        markov_process_solver()
+        pi, values = markov_process_solver(graph, probabilities, rewards)
+        if VERBOSE:
+            print(' '.join([f"{k}={v:.3f}" for k, v in sorted(values.items(), key=lambda x: x[0])]))
 
 
 if __name__ == "__main__":
