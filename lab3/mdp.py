@@ -52,15 +52,18 @@ def read_input(filename):
                 continue
             elif '=' in line:
                 name, val = line.split('=')
+                name, val = name.strip(), val.strip()
                 rewards[name] = eval(val)
             elif ':' in line:
-                name, lst = line.split(' : ')
+                name, lst = line.split(':')
+                name, lst = name.strip(), lst.strip()
                 if not name.isalnum():
                     print("[ERROR] variables should be alpha or number")
                     exit(1)
                 graph[name] = lst[1:-1].replace(' ', '').split(',')
             elif '%' in line:
-                name, probs = line.split(' % ')
+                name, probs = line.split('%')
+                name, probs = name.strip(), probs.strip()
                 # TBD: if not decision node, check if the probabilities have a sum of 1
                 probabilities[name] = list(map(eval, probs.split(' ')))
     return graph, probabilities, rewards
@@ -118,12 +121,14 @@ def backwards_induction(graph, probabilities, rewards, entries):
     if chance node, returns the expectation
     if terminal, return rewards
     """
+    values = {}
+    pi = {}
     for node in entries:
-        rewards[node] = backwards_induction_helper(graph, probabilities, rewards, node)
-    
+        backwards_induction_helper(graph, probabilities, rewards, node, values, pi)
+    return pi, values
 
 
-def backwards_induction_helper(graph, probabilities, rewards, node):
+def backwards_induction_helper(graph, probabilities, rewards, node, values, pi):
     """
     helper function for backwards_induction
     """
@@ -136,22 +141,22 @@ def backwards_induction_helper(graph, probabilities, rewards, node):
             choice_v = -inf if not MIN_VALUE else inf
             choice = None
             for child in graph[node]:
-                _v = backwards_induction_helper(graph, probabilities, rewards, child)
+                _v = backwards_induction_helper(graph, probabilities, rewards, child, values, pi)
                 if not MIN_VALUE and _v > choice_v:
                     choice_v = _v
                     choice = child
                 if MIN_VALUE and _v < choice_v:
                     choice_v = _v
                     choice = child
-            print(f"{node}->{choice}")
-            rewards[node] = choice_v
+            values[node] = choice_v
+            pi[node] = choice
             return choice_v
         # if a chance node
         else:
-            expectation = rewards.get(node, 0)
+            expectation = values.get(node, 0)
             for p, child in zip(probabilities[node], graph[node]):
                 expectation += p * backwards_induction_helper(graph, probabilities, rewards, child)
-            rewards[node] = expectation
+            values[node] = expectation
             return expectation
 
 def markov_process_solver(graph, probabilities, rewards):
@@ -165,9 +170,9 @@ def markov_process_solver(graph, probabilities, rewards):
     # print()
     while True:
         values = value_iteration(graph, probabilities, values, pi, rewards)
-        print(values)
+        # print(values)
         _pi = greedy_policy_computation(graph, values, pi)
-        print(_pi)
+        # print(_pi)
         # print(_pi)
         if pi == _pi:
             return pi, values
@@ -225,14 +230,12 @@ def value_iteration(graph, probabilities, values, pi, rewards):
             else:
                 lst = []
                 exp = 0
-                print(node)
                 for p, v in zip(probabilities.get(node, [1]), graph[node]):
-                    print(p, v)
                     exp += p * values[v]
                 lst.append(exp)
             new_values[node] = rewards.get(node, 0) + DISCOUNT_FACTOR * sum(lst)
         # break out condition
-        print(new_values)
+        # print(new_values)
         tolerance = max([abs(new_values[node] - values[node]) for node in values])
         if tolerance < TOLERANCE or iter >= MAX_ITERATION:
             return new_values
@@ -260,9 +263,12 @@ def greedy_policy_computation(graph, values, pi):
 
 def main():
     args = parse_arguments()
-    global VERBOSE, MIN_VALUE, TOLERANCE, MAX_ITERATION
+    global VERBOSE, MIN_VALUE, TOLERANCE, MAX_ITERATION, DISCOUNT_FACTOR
     VERBOSE = args['v']
     MIN_VALUE = args['min']
+    DISCOUNT_FACTOR = float(args['df'])
+    TOLERANCE = float(args['tol'])
+    MAX_ITERATION = int(args['iter'])
     # get input
     graph, probabilities, rewards = read_input(args['input-file'])
     # print(graph)
@@ -274,14 +280,16 @@ def main():
     # run Backwards induction if no
     if len(entries):
         # backwards induction
-        backwards_induction(graph, probabilities, rewards, entries)
-        if VERBOSE:
-            print(' '.join([f"{k}={v}" for k, v in sorted(rewards.items(), key=lambda x: x[0])]))
+        pi, values = backwards_induction(graph, probabilities, rewards, entries)
+        for k, v in pi.items():
+            print(f"{k} -> {v}")
+        print(' '.join([f"{k}={v}" for k, v in sorted(rewards.items(), key=lambda x: x[0])]))
     # run MDP solver
     else:
         pi, values = markov_process_solver(graph, probabilities, rewards)
-        if VERBOSE:
-            print(' '.join([f"{k}={v:.3f}" for k, v in sorted(values.items(), key=lambda x: x[0])]))
+        for k, v in pi.items():
+            print(f"{k} -> {v}")
+        print(' '.join([f"{k}={v:.3f}" for k, v in sorted(values.items(), key=lambda x: x[0])]))
 
 
 if __name__ == "__main__":
