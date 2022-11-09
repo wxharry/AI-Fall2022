@@ -134,6 +134,7 @@ def backwards_induction_helper(graph, probabilities, rewards, node, values, pi):
     """
     # if a terminal 
     if not graph.get(node):
+        values[node] = rewards.get(node, 0)
         return rewards.get(node, 0)
     else:
         # if a decision node
@@ -153,9 +154,9 @@ def backwards_induction_helper(graph, probabilities, rewards, node, values, pi):
             return choice_v
         # if a chance node
         else:
-            expectation = values.get(node, 0)
+            expectation = rewards.get(node, 0)
             for p, child in zip(probabilities[node], graph[node]):
-                expectation += p * backwards_induction_helper(graph, probabilities, rewards, child)
+                expectation += p * backwards_induction_helper(graph, probabilities, rewards, child, values, pi)
             values[node] = expectation
             return expectation
 
@@ -281,15 +282,14 @@ def main():
     if len(entries):
         # backwards induction
         pi, values = backwards_induction(graph, probabilities, rewards, entries)
-        for k, v in pi.items():
-            print(f"{k} -> {v}")
-        print(' '.join([f"{k}={v}" for k, v in sorted(rewards.items(), key=lambda x: x[0])]))
     # run MDP solver
     else:
         pi, values = markov_process_solver(graph, probabilities, rewards)
-        for k, v in pi.items():
-            print(f"{k} -> {v}")
-        print(' '.join([f"{k}={v:.3f}" for k, v in sorted(values.items(), key=lambda x: x[0])]))
+    
+    # parse output
+    for k, v in pi.items():
+        print(f"{k} -> {v}")
+    print(' '.join([f"{k}={v:.3f}" for k, v in sorted(values.items(), key=lambda x: x[0])]))
 
 
 if __name__ == "__main__":
