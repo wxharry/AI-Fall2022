@@ -214,27 +214,24 @@ def value_iteration(graph, probabilities, values, pi, rewards):
     while True:
         new_values = {}
         for node in values:
-            lst = []
+            exp = 0
             # if a decision node
             if pi.get(node):
                 for neighbor in graph[node]:
                     # if neighbor is identical to the policy
                     if neighbor == pi[node]:
-                        lst.append(probabilities.get(node, [1.0])[0] * values[neighbor])
+                        exp += round(probabilities.get(node, [1.0])[0] * values[neighbor], 4)
                     else:
-                        lst.append((1 - probabilities.get(node, [1.0])[0])/(len(graph[node])-1) * values[neighbor])
+                        exp += round((1 - probabilities.get(node, [1.0])[0])/(len(graph[node])-1) * values[neighbor], 4)
             # else if a terminal
             elif not graph.get(node):
                 new_values[node] = rewards.get(node, 0)
                 continue
             # else if a transition node, which has one child and has one or no probability
             else:
-                lst = []
-                exp = 0
                 for p, v in zip(probabilities.get(node, [1]), graph[node]):
-                    exp += p * values[v]
-                lst.append(exp)
-            new_values[node] = rewards.get(node, 0) + DISCOUNT_FACTOR * sum(lst)
+                    exp += round(p * values[v], 4)
+            new_values[node] = round(rewards.get(node, 0) + DISCOUNT_FACTOR * exp, 4)
         # break out condition
         # print(new_values)
         tolerance = max([abs(new_values[node] - values[node]) for node in values])
@@ -281,13 +278,17 @@ def main():
     # run Backwards induction if no
     if len(entries):
         # backwards induction
+        if VERBOSE:
+            print(f"Run backwards induction with entries {entries}")
         pi, values = backwards_induction(graph, probabilities, rewards, entries)
     # run MDP solver
     else:
+        if VERBOSE:
+            print("Run MDP solver")
         pi, values = markov_process_solver(graph, probabilities, rewards)
     
     # parse output
-    for k, v in pi.items():
+    for k, v in sorted(pi.items(), key=lambda x: x[0]):
         print(f"{k} -> {v}")
     print(' '.join([f"{k}={v:.3f}" for k, v in sorted(values.items(), key=lambda x: x[0])]))
 
