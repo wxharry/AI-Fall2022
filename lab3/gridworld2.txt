@@ -1,0 +1,54 @@
+# gridworld
+# using 100 iterations and tolerance of 0.001.
+# Using a discount factor 𝛾 of 0.9 and a Q-learning α of 0.15
+
+A : [A, B, E]
+B : [A, B, C, F]
+C : [B, C, D, G]
+D : [C, D, H]
+E : [A, E, F, I]
+F : [B, E, G, J]
+G : [C, F, H, K]
+H : [D, G, H, L]
+I : [E, I, J, M]
+J : [F, I, K, N]
+K : [G, J, L, P]
+L : [H, K, L, Q]
+M : [I, M, N]
+N : [J, M, N, P]
+P : [K, N, P, Q]
+Q : [L, P, Q]
+
+A % 0.85
+B % 0.85
+C % 0.85
+D % 0.85
+E % 0.85
+F % 0.85
+G % 0.25 0.25 0.25 0.25
+H % 0.85
+I % 0.85
+J % 0.25 0.25 0.25 0.25
+K % 0.85
+L % 0.85
+M % 0.85
+N % 0.85
+P % 0.85
+Q % 0.85
+
+A=11
+B=-1
+C=-1
+D=-1
+E=-1
+F=-1
+G=4
+H=-1
+I=-1
+J=4
+K=-1
+L=-1
+M=-1
+N=-1
+P=-1
+Q=-11
