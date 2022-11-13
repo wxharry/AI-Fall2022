@@ -64,8 +64,11 @@ def read_input(filename):
             elif '%' in line:
                 name, probs = line.split('%')
                 name, probs = name.strip(), probs.strip()
-                # TBD: if not decision node, check if the probabilities have a sum of 1
+                # if not decision node, check if the probabilities have a sum of 1
                 probabilities[name] = list(map(eval, probs.split(' ')))
+                if len(probabilities[name]) > 1 and abs(sum(probabilities[name]) - 1) > TOLERANCE:
+                    print("ERROR: probabilities of a chance node should have a sum of 1")
+                    exit(1)
     return graph, probabilities, rewards
 
 def is_cyclic(graph):
