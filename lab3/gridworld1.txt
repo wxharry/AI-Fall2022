@@ -2,7 +2,6 @@
 # using 100 iterations and tolerance of 0.001.
 # Using a discount factor 𝛾 of 0.9 and a Q-learning α of 0.15
 
-A : [A, B, E]
 B : [A, B, C, F]
 C : [B, C, D, G]
 D : [C, D, H]
@@ -17,9 +16,7 @@ L : [H, K, L, Q]
 M : [I, M, N]
 N : [J, M, N, P]
 P : [K, N, P, Q]
-Q : [L, P, Q]
 
-A % 0.85
 B % 0.25 0.25 0.25 0.25
 C % 0.25 0.25 0.25 0.25
 D % 0.333 0.333 0.333
@@ -34,7 +31,6 @@ L % 0.25 0.25 0.25 0.25
 M % 0.333 0.333 0.333
 N % 0.25 0.25 0.25 0.25
 P % 0.25 0.25 0.25 0.25
-Q % 0.85
 
 A=3
 B=-2
