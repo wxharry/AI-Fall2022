@@ -11,7 +11,7 @@ def KNN(train, test, k, **kwargs):
     For k-nearest neighbor, there is no training, you just parse and load the file into memory, then use it for classification.
     As discussed in class, for each each test point you compute the distance to each training point, picking the K nearest ones and they then
     "vote" on the classification using a weight of 1 over the distance.  For distance we will use euclidean squared between two points:
-    For example of there are 3 predictive attributes: D(1, y1, z1>, 2,y2, z2>) = (z2-z1)2 + (y2-y1)2 + (x2-x1)2
+    For example of there are 3 predictive attributes: D(x1, y1, z1, x2,y2, z2) = (z2-z1)2 + (y2-y1)2 + (x2-x1)2
     You then compare the predicted label to the actual one and record for later metrics.
     """
     dist = []
@@ -20,11 +20,12 @@ def KNN(train, test, k, **kwargs):
     for *vec, label in train:
         p = Point(vec)
         dist.append((target.e2distance(p), label))
-    dist = sorted(dist, key=lambda x: x[0])
+    dist = sorted(dist, key=lambda x: x[0])[:k]
     # print(dist[:k])
     vote = {}
-    for d, l in dist[:k]:
-        vote[l] = vote.get(l, 0) + 1
+    for d, l in dist:
+        vote_function = lambda d: 1 / (d+1)
+        vote[l] = vote.get(l, 0) + vote_function(d)
     # print(vote)
     return max(vote.items(), key=lambda x: x[1])[0]
 
