@@ -3,6 +3,8 @@ author: Xiaohan Wu
 NYU ID: xw2788
 email: xw2788@nyu.edu
 """
+from copy import deepcopy
+from random import choices
 from point import *
 
 def KNN(train, test, k, **kwargs):
@@ -76,4 +78,68 @@ def naive_bayes_predict(test, model):
     predict = max(possibility.items(), key=lambda x: x[1])
     return predict[0]
                 
-    
+
+def kMeans(data, k, centroids=[], dist_type='e2', max_iter=100):
+    """
+    K is inferred from the number of centroids provides.
+    """
+    features = []
+    labels = []
+    for line in data:
+        *v, l = line
+        features.append(v)
+        labels.append(l)
+    # check distance type
+    if dist_type not in ['e2', 'manh']:
+        raise Exception(f"only support dist_type strings as ['e2', 'manh], given {dist_type}")
+
+    # check dimensions
+    dimension = len(features[0])
+    for point in list(features + centroids):
+        if len(point) != dimension:
+            raise Exception(f"All the points should have the same dimension, found{point}")
+
+    # randomly pick 3 points from the input
+    if len(centroids) == 0:
+        centroids = choices(features, k=3)
+    # make all points to be point object
+    features = {l: Point(v, l) for v, l in zip(features, labels)}
+    centroids = {f'C{idx+1}': Point(c, f"C{idx+1}") for idx, c in enumerate(centroids)}
+    while max_iter:
+        centroids_copy = deepcopy(centroids)
+        distances = {}
+        for cnum, centroid in centroids.items():
+            for fnum, feature in features.items():
+                if dist_type == 'e2':
+                    distances[fnum] = distances.get(fnum, []) + [(cnum, centroid.e2distance(feature))]
+                if dist_type == 'manh':
+                    distances[fnum] = distances.get(fnum, []) + [(cnum, centroid.manhdistance(feature))]
+        # assign all points to the closest centroids
+        assignment = {}
+        for fnum, dists in distances.items():
+            cnum = min(dists, key=lambda x: x[1])[0]
+            assignment[cnum] = assignment.get(cnum, []) + [features[fnum]]
+        
+        # calculate the mean centroids
+        new_centroids = {}
+        for cnum in centroids:
+            zero = Point([0 for _ in range(dimension)])
+            points = assignment.get(cnum, [zero])
+            new_centroids[cnum] = sum(points, zero) / len(points)
+        if new_centroids == centroids_copy:
+            break
+        centroids = new_centroids
+
+        max_iter -= 1
+
+    for c in sorted(assignment):
+        print(f"{c} = "
+            + "{"
+            + f"{','.join([x.name for x in assignment[c]])}"
+            + "}"
+            )
+    for cent in sorted(centroids):
+        print(f"([{' '.join([str(num) for num in centroids[cent].vector])}])")
+
+    return (assignment, centroids)
+

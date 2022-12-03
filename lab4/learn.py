@@ -21,7 +21,7 @@ def parse_arguments(default_verbose=False, default_distance='e2'):
                         help="if > 0 indicates the Laplacian correction to use (0 means don't use one)")
     parser.add_argument('-d', choices={'e2', 'manh'}, default=default_distance,
                         help="indicating euclidean distance squared or manhattan distance to use")
-    parser.add_argument("-c", default=[],
+    parser.add_argument("centroids", default="[]", nargs='*',
                         help="if a list of centroids is provided those should be used for kMeans")
 
     args = parser.parse_args()
@@ -34,6 +34,8 @@ def read_input(filename):
     """
     read csv file as an input
     """
+    if not filename:
+        return
     data = []
     with open(filename, 'r', encoding='utf-8') as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
@@ -66,18 +68,21 @@ def main():
     train_data = read_input(args['train'])
     test_data = read_input(args['test'])
     prediction = []
-    if args['K'] > 0:
+    if test_data == None:
+        k = args['K'] if args['K'] > 0 else 3
+        r = kMeans(train_data, k, [eval(e) for e in args['centroids']], dist_type=args['d'])
+    elif args['K'] > 0:
         for test in test_data:
             r = KNN(train_data, test, args['K'])
             print(f"want={test[-1]} got={r}")
             prediction.append(r)
+        evaluation([row[-1] for row in test_data], prediction)
     else:
         model = naive_bayes_train(train_data, laplacian=args['C'])
         for test in test_data:
             r = naive_bayes_predict(test, model)
             prediction.append(r)
-    
-    evaluation([row[-1] for row in test_data], prediction)
+        evaluation([row[-1] for row in test_data], prediction)
 
 
 if __name__ == "__main__":

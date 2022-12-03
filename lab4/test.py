@@ -53,3 +53,23 @@ if __name__ == '__main__':
     os.system("python3 learn.py -train data/ex2_train.csv -test data/ex2_test.csv -C 1 > output")
     os.system("diff output data/nb2.2.out")
     os.system("rm output")
+    
+    print(" ======== test km1.e2")
+    os.system("python3 learn.py -train data/km1.txt 0,0 200,200 500,500 > output")
+    os.system("diff output data/km1.e2.out.txt")
+    os.system("rm output")
+
+    print(" ======== test km1.manh")
+    os.system("python3 learn.py -train data/km1.txt -d manh 0,0 200,200 500,500 > output")
+    os.system("diff output data/km1.manh.out.txt")
+    os.system("rm output")
+
+    print(" ======== test km2.e2")
+    os.system("python3 learn.py -train data/km2.txt 0,0,0 200,200,200 500,500,500 > output")
+    os.system("diff output data/km2.e2.out.txt")
+    os.system("rm output")
+
+    print(" ======== test km2.manh")
+    os.system("python3 learn.py -train data/km2.txt -d manh 0,0,0 200,200,200 500,500,500 > output")
+    os.system("diff output data/km2.manh.out.txt")
+    os.system("rm output")
