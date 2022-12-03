@@ -5,7 +5,7 @@ email: xw2788@nyu.edu
 """
 import argparse
 import csv
-from knn import *
+from algo import *
 
 def parse_arguments(default_verbose=False, default_distance='e2'):
     parser = argparse.ArgumentParser(description='')

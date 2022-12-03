@@ -17,15 +17,17 @@ def KNN(train, test, k, **kwargs):
     dist = []
     *test_v, test_label = test
     target = Point(test_v)
+    # calculate e2 distance for each point
     for *vec, label in train:
         p = Point(vec)
         dist.append((target.e2distance(p), label))
+    # sort the distances and get the k nearest points
     dist = sorted(dist, key=lambda x: x[0])[:k]
-    # print(dist[:k])
+
     vote = {}
+    # vote with a vote function to predict
     for d, l in dist:
         vote_function = lambda d: 1 / (d+1)
         vote[l] = vote.get(l, 0) + vote_function(d)
-    # print(vote)
     return max(vote.items(), key=lambda x: x[1])[0]
 
