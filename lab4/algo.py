@@ -31,3 +31,49 @@ def KNN(train, test, k, **kwargs):
         vote[l] = vote.get(l, 0) + vote_function(d)
     return max(vote.items(), key=lambda x: x[1])[0]
 
+
+def naive_bayes_train(train, laplacian=0, **kwargs):
+    """
+    For training you should load the training file into memory,
+    but then compute all of the conditional and pure probabilities in advance
+    (including laplacian smoothing if applicable).
+    Then when doing predictions on the test file,
+    you do the argmax as per class to predict a label,
+    recording versus the actual one for later metrics.
+    """
+
+    # count the frequencies of all labels and (feature, label) pair
+    label_freq = {}
+    feature_freq = {}
+    for line in train:
+        *features, label = line
+        label_freq[label] = label_freq.get(label, 0) + 1
+        for idx, feature in enumerate(features):
+            feature_freq[((idx, feature), label)] = feature_freq.get(((idx, feature), label), 0) + 1
+    
+    # calculate the probabilities of labels and conditional probabilities for (feature, label) pair
+    domain_number = len(label_freq)
+    probabilities = {}
+    for label in label_freq:
+        probabilities[label] = label_freq[label] / sum(label_freq.values())
+        for feature, condition in feature_freq:
+            if condition == label:
+                probabilities[(feature, condition)] = (feature_freq[(feature, label)] + laplacian) / (label_freq[label] + domain_number * laplacian)
+    return {
+        "probabilities": probabilities,
+        "labels": label_freq.keys(),
+        "laplacian": laplacian
+    }
+
+def naive_bayes_predict(test, model):
+    *features, label = test
+    probabilities = model['probabilities']
+    possibility = {}
+    for label in model['labels']:
+        possibility[label] = probabilities[label]
+        for idx, feature in enumerate(features):
+            possibility[label] *= probabilities.get(((idx,feature), label), 0)
+    predict = max(possibility.items(), key=lambda x: x[1])
+    return predict[0]
+                
+    

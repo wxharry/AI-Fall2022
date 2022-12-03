@@ -17,7 +17,7 @@ def parse_arguments(default_verbose=False, default_distance='e2'):
                         help="the testing data file")
     parser.add_argument('-K', default=0, type=int,
                         help="if > 0 indicates to use kNN and also the value of K (if 0, do Naive Bayes')")
-    parser.add_argument('-C', default=0,
+    parser.add_argument('-C', default=0, type=int,
                         help="if > 0 indicates the Laplacian correction to use (0 means don't use one)")
     parser.add_argument('-d', choices={'e2', 'manh'}, default=default_distance,
                         help="indicating euclidean distance squared or manhattan distance to use")
@@ -38,13 +38,13 @@ def read_input(filename):
     with open(filename, 'r', encoding='utf-8') as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
+            if not row:
+                continue
             data.append([int(ele) for ele in row[:-1]] + [row[-1]])
     return data
 
 def evaluation(answer, system):
     domain = set(answer) | set(system)
-    for x, y in zip(answer, system):
-        print(f"want={x} got={y}")
 
     for label in sorted(list(domain)):
         true_positive = 0
@@ -66,9 +66,16 @@ def main():
     train_data = read_input(args['train'])
     test_data = read_input(args['test'])
     prediction = []
-    for test in test_data:
-        r = KNN(train_data, test, args['K'])
-        prediction.append(r)
+    if args['K'] > 0:
+        for test in test_data:
+            r = KNN(train_data, test, args['K'])
+            print(f"want={test[-1]} got={r}")
+            prediction.append(r)
+    else:
+        model = naive_bayes_train(train_data, laplacian=args['C'])
+        for test in test_data:
+            r = naive_bayes_predict(test, model)
+            prediction.append(r)
     
     evaluation([row[-1] for row in test_data], prediction)
 

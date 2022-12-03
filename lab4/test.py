@@ -28,3 +28,28 @@ if __name__ == '__main__':
     os.system("python3 learn.py -train data/knn3.train.txt -test data/knn3.test.txt -K 7 > output")
     os.system("diff output data/knn3.e2.7.out.txt")
     os.system("rm output")
+
+    print(" ======== test nb1.0")
+    os.system("python3 learn.py -train data/ex1_train.csv -test data/ex1_test.csv > output")
+    os.system("diff output data/nb1.0.out")
+    os.system("rm output")
+
+    print(" ======== test nb1.1")
+    os.system("python3 learn.py -train data/ex1_train.csv -test data/ex1_test.csv -C 1 > output")
+    os.system("diff output data/nb1.1.out")
+    os.system("rm output")
+
+    print(" ======== test nb2.0")
+    os.system("python3 learn.py -train data/ex2_train.csv -test data/ex2_test.csv > output")
+    os.system("diff output data/nb2.0.out")
+    os.system("rm output")
+
+    print(" ======== test nb2.1")
+    os.system("python3 learn.py -train data/ex2_train.csv -test data/ex2_test.csv -C 1 > output")
+    os.system("diff output data/nb2.1.out")
+    os.system("rm output")
+
+    print(" ======== test nb2.2")
+    os.system("python3 learn.py -train data/ex2_train.csv -test data/ex2_test.csv -C 1 > output")
+    os.system("diff output data/nb2.2.out")
+    os.system("rm output")
