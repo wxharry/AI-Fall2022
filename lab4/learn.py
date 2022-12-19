@@ -70,7 +70,7 @@ def main():
     prediction = []
     if test_data == None:
         k = args['K'] if args['K'] > 0 else 3
-        r = kMeans(train_data, k, [eval(e) for e in args['centroids']], dist_type=args['d'])
+        r = kMeans(train_data, k, [eval(e) for e in args['centroids']], dist_type=args['d'], v=args['v'])
     elif args['K'] > 0:
         for test in test_data:
             r = KNN(train_data, test, args['K'])

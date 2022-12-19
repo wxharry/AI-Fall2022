@@ -79,7 +79,7 @@ def naive_bayes_predict(test, model):
     return predict[0]
                 
 
-def kMeans(data, k, centroids=[], dist_type='e2', max_iter=100):
+def kMeans(data, k, centroids=[], dist_type='e2', max_iter=100, **kwarg):
     """
     K is inferred from the number of centroids provides.
     """
@@ -88,7 +88,7 @@ def kMeans(data, k, centroids=[], dist_type='e2', max_iter=100):
     for line in data:
         *v, l = line
         features.append(v)
-        labels.append(l)
+        labels.append(l.strip())
     # check distance type
     if dist_type not in ['e2', 'manh']:
         raise Exception(f"only support dist_type strings as ['e2', 'manh], given {dist_type}")
@@ -101,18 +101,19 @@ def kMeans(data, k, centroids=[], dist_type='e2', max_iter=100):
 
     # randomly pick 3 points from the input
     if len(centroids) == 0:
-        centroids = choices(features, k=3)
+        centroids = choices(features, k)
     # make all points to be point object
     features = {l: Point(v, l) for v, l in zip(features, labels)}
     centroids = {f'C{idx+1}': Point(c, f"C{idx+1}") for idx, c in enumerate(centroids)}
-    while max_iter:
+    iteration = 0
+    while iteration < max_iter:
         centroids_copy = deepcopy(centroids)
         distances = {}
         for cnum, centroid in centroids.items():
             for fnum, feature in features.items():
                 if dist_type == 'e2':
                     distances[fnum] = distances.get(fnum, []) + [(cnum, centroid.e2distance(feature))]
-                if dist_type == 'manh':
+                elif dist_type == 'manh':
                     distances[fnum] = distances.get(fnum, []) + [(cnum, centroid.manhdistance(feature))]
         # assign all points to the closest centroids
         assignment = {}
@@ -129,8 +130,17 @@ def kMeans(data, k, centroids=[], dist_type='e2', max_iter=100):
         if new_centroids == centroids_copy:
             break
         centroids = new_centroids
-
-        max_iter -= 1
+        if kwarg.get("v", False):
+            print(f"======== iteration {iteration}: ")
+            for c in sorted(assignment):
+                print(f"{c} = "
+                    + "{"
+                    + f"{','.join([x.name for x in assignment[c]])}"
+                    + "}"
+                    )
+            for cent in sorted(centroids):
+                print(f"([{' '.join([str(num) for num in centroids[cent].vector])}])")
+        iteration += 1
 
     for c in sorted(assignment):
         print(f"{c} = "
